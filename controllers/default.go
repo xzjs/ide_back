@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -43,12 +44,16 @@ func (c *MainController) Post() {
 	}
 	defer handle.Close()
 
-	handle.WriteString(string(t) + "\n\n" + code.Code + "\n" + "print(arr)")
+	handle.WriteString(string(t) + "\n\n" + code.Code + "\n\n" + "print(arr)")
 
-	out, err := exec.Command("python3", "code.py").Output()
+	cmd := exec.Command("python3", "code.py")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err = cmd.Run()
 	if err != nil {
 		fmt.Println(err)
+		fmt.Println(out.String())
 	}
 
-	c.Ctx.WriteString(string(out))
+	c.Ctx.WriteString(out.String())
 }
